@@ -1,0 +1,23 @@
+{
+  "name": "octopack",
+  "version": "0.0.1",
+  "description": "",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rimlin/octopack.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rimlin/octopack/issues"
+  },
+  "homepage": "https://github.com/rimlin/octopack#readme",
+  "devDependencies": {
+    "angular-tslint-rules": "^1.2.1"
+  }
+}
