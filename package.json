@@ -5,7 +5,9 @@
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc"
+    "test": "node ./dist/test/main.js",
+    "build": "rimraf ./dist && tsc",
+    "start": "npm run build && npm run test"
   },
   "repository": {
     "type": "git",
@@ -19,5 +21,14 @@
   "homepage": "https://github.com/rimlin/octopack#readme",
   "devDependencies": {
     "angular-tslint-rules": "^1.2.1"
+  },
+  "dependencies": {
+    "@types/node": "^9.4.5",
+    "babel-core": "^6.26.0",
+    "babylon": "^6.18.0",
+    "babylon-walk": "^1.0.2",
+    "browser-resolve": "^1.11.2",
+    "node-libs-browser": "^2.1.0",
+    "worker-farm": "^1.5.2"
   }
 }
