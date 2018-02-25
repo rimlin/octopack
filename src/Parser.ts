@@ -10,6 +10,10 @@ export class Parser {
     this.registerExtensions(['json'], './assets/JSONAsset');
   }
 
+  getExtensions() {
+    return this.extensions;
+  }
+
   getAsset(filename): Asset {
     const TargetAsset = this.findAsset(filename);
     return new TargetAsset(filename);

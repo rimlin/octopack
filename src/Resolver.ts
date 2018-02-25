@@ -1,8 +1,7 @@
 import * as _resolve from 'browser-resolve';
 import * as builtins from 'node-libs-browser';
 import * as path from 'path';
-
-import { promisify } from './utils';
+import { promisify } from 'util';
 
 const resolve = promisify(_resolve);
 
@@ -12,35 +11,46 @@ for (let key in builtins) {
   }
 }
 
+export interface ResolverOptions {
+  extensions?: Array<string>;
+}
+
 export class Resolver {
-  options: {
-    paths?: any;
-  } = {};
+  options: ResolverOptions = {};
   cache = new Map();
 
-  constructor(options = {}) {
+  constructor(options: ResolverOptions) {
     this.options = options;
   }
 
   async resolve(filename, parent) {
-    const key = (parent ? path.dirname(parent) : '') + ':' + filename;
+    var resolved = await this.resolveInternal(filename, parent);
+    return this.saveCache(filename, parent, resolved);
+  }
 
+  async resolveInternal(filename, parent) {
+    const key = this.getCacheKey(filename, parent);
     if (this.cache.has(key)) {
       return this.cache.get(key);
     }
 
-    let res = await resolve(filename, {
+    return await resolve(filename, {
       filename: parent,
-      paths: this.options.paths,
       modules: builtins,
+      extensions: this.options.extensions
     });
+  }
 
-    if (Array.isArray(res)) {
-      res = res[0];
+  getCacheKey(filename, parent) {
+    return (parent ? path.dirname(parent) : '') + ':' + filename;
+  }
+
+  saveCache(filename, parent, resolved) {
+    if (Array.isArray(resolved)) {
+      resolved = resolved[0];
     }
 
-    this.cache.set(key, res);
-
-    return res;
+    this.cache.set(this.getCacheKey(filename, parent), resolved);
+    return resolved;
   }
 }

@@ -1,6 +1,5 @@
-import * as fs from 'fs';
+import { readFile, writeFile} from 'fs';
+import { promisify } from 'util';
 
-import { promisify } from './promisify';
-
-export const readFileAsync = promisify(fs.readFile);
-export const writeFileAsync = promisify(fs.writeFile);
+export const readFileAsync = promisify(readFile);
+export const writeFileAsync = promisify(writeFile);

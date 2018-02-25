@@ -1,4 +1,5 @@
 import { Bundler } from '../src/Bundler';
+import { Asset } from '../src/Asset';
 
 process.on('unhandledRejection', console.error)
 
@@ -10,8 +11,14 @@ async function run() {
   printDeps(bundle);
 }
 
-function printDeps(bundle: any, indent = '', deps = new Set) {
-  console.log(bundle);
+function printDeps(bundle: Asset, indent = '', deps = new Set) {
+  for (let asset of bundle.depAssets.values()) {
+    console.log(indent + asset.filename);
+    if (!deps.has(asset.filename)) {
+      deps.add(asset.filename);
+      printDeps(asset, indent + '  ', deps);
+    }
+  }
 }
 
 run().then(console.log, console.error);

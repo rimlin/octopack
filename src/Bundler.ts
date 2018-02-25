@@ -1,6 +1,6 @@
 import * as workerFarm from 'worker-farm';
 
-import { promisify, readFileAsync, writeFileAsync } from './utils';
+import { readFileAsync, writeFileAsync } from './utils';
 import { Bundle } from './Bundle';
 import { Resolver } from './Resolver';
 import { Parser } from './Parser';
@@ -26,7 +26,9 @@ export class Bundler {
     this.options = options;
 
     this.parser = new Parser({});
-    this.resolver = new Resolver({});
+    this.resolver = new Resolver({
+      extensions: Object.keys(this.parser.getExtensions())
+    });
     this.workerFarm = new WorkerFarm({});
   }
 
@@ -35,11 +37,11 @@ export class Bundler {
 
     const mainAsset = await this.resolveAsset(this.mainFilename);
 
-    const result = await this.bundleAssets(mainAsset);
+    await this.bundleAssets(mainAsset);
 
     this.endFarm();
 
-    return result;
+    return mainAsset;
   }
 
   async bundleAssets(mainAsset: Asset) {
@@ -53,7 +55,7 @@ export class Bundler {
       return this.loadedAssets.get(path);
     }
 
-    const asset = this.parser.getAsset(filename);
+    const asset = this.parser.getAsset(path);
     this.loadedAssets.set(path, asset);
 
     return asset;
@@ -73,10 +75,10 @@ export class Bundler {
     return await Promise.all(dependencies.map(async dependencyFilename => {
       const assetDep = await this.resolveAsset(dependencyFilename, asset.filename);
 
-      asset.depAssets.set(assetDep.filename, asset);
+      asset.depAssets.set(assetDep.filename, assetDep);
       asset.dependencies.add(dependencyFilename);
 
-      return await this.loadAsset(assetDep);
+      await this.loadAsset(assetDep);
     }));
   }
 
