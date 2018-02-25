@@ -1,35 +1,42 @@
 import { extname } from 'path';
 
-import { PARSERS } from './parsers';
+import { Asset } from './Asset';
 
 export class Parser {
   extensions = {};
 
   constructor(options = {}) {
-    PARSERS.forEach(({ extnames, parser }) => {
-      extnames.forEach(extname => this.registerParser(extname, parser));
+    this.registerExtensions(['js', 'jsx', 'es6'], './assets/JSAsset');
+    this.registerExtensions(['json'], './assets/JSONAsset');
+  }
+
+  getAsset(filename): Asset {
+    const TargetAsset = this.findAsset(filename);
+    return new TargetAsset(filename);
+  }
+
+  private registerExtensions(extnames, assetParser): void {
+    extnames.forEach((extname: string) => {
+      if (!extname.startsWith('.')) {
+        extname = `.${extname}`;
+      }
+
+      this.extensions[extname] = assetParser;
     });
   }
 
-  registerParser(extname, parser) {
-    this.extensions[extname] = parser;
-  }
-
-  getParser(filename) {
+  private findAsset(filename): new(filename: string) => Asset {
     const extension = extname(filename);
-    const parser = this.extensions[`${extension}`];
+    let asset = this.extensions[extension];
 
-    if (!parser) {
+    if (!asset) {
       throw new Error(`Could not find parser for extension ${extension}`);
     }
 
-    return parser;
-  }
+    if (typeof asset === 'string') {
+      asset = this.extensions[extension] = require(asset).default;
+    }
 
-  parse(filename, code) {
-    const parser = this.getParser(filename);
-    const options = { filename };
-
-    return parser(code, options);
+    return asset;
   }
 }

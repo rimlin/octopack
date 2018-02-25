@@ -1,25 +1,17 @@
-import { Bundle } from '../src/Bundle';
-import { BundleModule } from 'BundleModule';
+import { Bundler } from '../src/Bundler';
 
 process.on('unhandledRejection', console.error)
 
 async function run() {
-  let bundle = new Bundle('/mnt/d/Dev/diplom/test/test.js', {});
-  //let bundle = new Bundle('D:\\Dev\\diplom\\test\\test.js', {});
-  let module = await bundle.collectDependencies();
+  // let bundler = new Bundler('/mnt/d/Dev/diplom/test/test.js', {});
+  let bundler = new Bundler('D:\\Dev\\diplom\\test\\test.js', {});
+  let bundle = await bundler.bundle();
 
-  printDeps(module);
+  printDeps(bundle);
 }
 
-function printDeps(mainBundleModule: BundleModule, indent = '', deps = new Set) {
-  for (let bundleModule of mainBundleModule.modules.values()) {
-    console.log(indent + bundleModule.name);
-    if (!deps.has(bundleModule.name)) {
-      deps.add(bundleModule.name);
-      printDeps(bundleModule, indent + '  ', deps);
-	  // babel.transformFromAst(mod.ast);
-    }
-  }
+function printDeps(bundle: any, indent = '', deps = new Set) {
+  console.log(bundle);
 }
 
 run().then(console.log, console.error);

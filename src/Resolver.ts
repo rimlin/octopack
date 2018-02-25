@@ -29,7 +29,7 @@ export class Resolver {
       return this.cache.get(key);
     }
 
-    let res= await resolve(filename, {
+    let res = await resolve(filename, {
       filename: parent,
       paths: this.options.paths,
       modules: builtins,

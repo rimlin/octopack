@@ -1,65 +1,35 @@
-import * as workerFarm from 'worker-farm';
+import * as path from 'path';
+import * as walk from 'babylon-walk';
 
-import { promisify, readFileAsync, writeFileAsync } from './utils';
-import { BundleModule } from './BundleModule';
-import { Resolver } from './Resolver';
-import { Parser } from './Parser';
-
-export interface IBundleOptions {
-
-}
+import collectDependencies from './visitors/dependencies';
 
 export class Bundle {
-  mainFile: string;
-  options: IBundleOptions;
-  resovler: Resolver;
-  loadedModules = new Map<string, BundleModule>();
-  loading = new Set<BundleModule>();
-  farm: Workers = workerFarm({ autoStart: true }, require.resolve('./worker'));
-  runFarm = promisify(this.farm);
+  name: string;
+  basename: string;
+  code: any;
+  ast: any;
+  options: {};
+  dependencies = new Set<string>();
+  modules = new Map<any, Bundle>();
 
-  constructor(main: string, options: IBundleOptions) {
-    this.mainFile = main;
+  constructor(name, options = {}) {
+    this.name = name;
     this.options = options;
-    this.resovler = new Resolver(options);
   }
 
-  async collectDependencies() {
-    const mainBundleModule = await this.resolveModule(this.mainFile);
-    await this.loadBundleModule(mainBundleModule);
-
-    workerFarm.end(this.farm);
-    return mainBundleModule;
+  setCode(code: string) {
+    this.code = code;
   }
 
-  async resolveModule(name: string, parent?: string) {
-    const path = await this.resovler.resolve(name, parent);
-
-    if (this.loadedModules.has(path)) {
-      return this.loadedModules.get(path);
-    }
-
-    const bundleModule = new BundleModule(path, this.options);
-    this.loadedModules.set(path, bundleModule);
-
-    return bundleModule;
+  setAST(ast: any) {
+    this.ast = ast;
   }
 
-  async loadBundleModule(bundleModule: BundleModule): Promise<any> {
-    if (this.loading.has(bundleModule)) {
-      return;
-    }
+  traverse(visitor) {
+    return walk.simple(this.ast, visitor, this);
+  }
 
-    this.loading.add(bundleModule);
-
-    const dependencies = await this.runFarm(bundleModule.name, this.options);
-    bundleModule.dependencies = dependencies;
-
-    return await Promise.all(dependencies.map(async dependency => {
-      const childBundleModule = await this.resolveModule(dependency, bundleModule.name);
-      bundleModule.modules.set(dependency, childBundleModule);
-
-      return await this.loadBundleModule(childBundleModule);
-    }));
+  collectDependencies() {
+    this.traverse(collectDependencies);
   }
 }

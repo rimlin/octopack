@@ -1,23 +1,23 @@
 import * as types from 'babel-types';
 
-import { BundleModule } from '../BundleModule';
+import { Asset } from '../Asset';
 
 const visitor = {
-  ImportDeclaration(node, bundleModule: BundleModule) {
-    bundleModule.dependencies.add(node.source.value);
+  ImportDeclaration(node, asset: Asset) {
+    asset.dependencies.add(node.source.value);
   },
 
-  ExportNamedDeclaration(node, bundleModule: BundleModule) {
+  ExportNamedDeclaration(node, asset: Asset) {
     if (node.source) {
-      bundleModule.dependencies.add(node.source.value);
+      asset.dependencies.add(node.source.value);
     }
   },
 
-  ExportAllDeclaration(node, bundleModule: BundleModule) {
-    bundleModule.dependencies.add(node.source.value);
+  ExportAllDeclaration(node, asset: Asset) {
+    asset.dependencies.add(node.source.value);
   },
 
-  CallExpression(node, bundleModule: BundleModule) {
+  CallExpression(node, asset: Asset) {
     let {callee, arguments: args} = node;
 
     let isRequire = types.isIdentifier(callee)
@@ -29,7 +29,7 @@ const visitor = {
       return;
     }
 
-    bundleModule.dependencies.add(args[0].value);
+    asset.dependencies.add(args[0].value);
   }
 }
 

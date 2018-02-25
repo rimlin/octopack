@@ -1,21 +1,16 @@
 import { readFileAsync } from './utils';
 import { Parser } from './Parser';
-import { BundleModule } from './BundleModule';
 
 process.on('unhandledRejection', console.error);
 
-let parser;
+const parser = new Parser({});
 
-module.exports = async function(path, options, callback) {
-  if (!parser) {
-    parser = new Parser(options || {});
-  }
+export async function run(filename) {
+  const asset = parser.getAsset(filename);
+  await asset.process();
 
-  const bundleModule = new BundleModule(path, options);
-
-  bundleModule.setCode(await readFileAsync(path, 'utf-8'));
-  bundleModule.setAST(parser.parse(path, bundleModule.code));
-  bundleModule.collectDependencies();
-
-  callback(null, Array.from(bundleModule.dependencies));
+  return {
+    dependencies: Array.from(asset.dependencies.values()),
+    generated: asset.generated
+  };
 };
