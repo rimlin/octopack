@@ -1,8 +1,8 @@
-import traverse from 'babel-traverse';
+import traverse from '@babel/traverse';
+import generate from '@babel/generator';
 import * as walk from 'babylon-walk';
 import * as babylon from 'babylon';
 import babel from '../transforms/babel';
-import generate from 'babel-generator';
 
 import { Asset, AssetOptions } from '../Asset';
 import collectDependencies from '../visitors/dependencies';

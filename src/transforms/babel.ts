@@ -1,4 +1,4 @@
-import * as babel from 'babel-core';
+import * as babel from '@babel/core';
 import { Asset } from '../Asset';
 
 export default async function (asset: Asset) {
@@ -11,7 +11,7 @@ export default async function (asset: Asset) {
   };
 
   if (asset.isES6Module) {
-    config.plugins = [require('babel-plugin-transform-es2015-modules-commonjs')];
+    config.plugins = [require('@babel/plugin-transform-modules-commonjs')];
   }
 
   let res = babel.transformFromAst(asset.ast, asset.content, config);

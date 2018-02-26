@@ -1,6 +1,6 @@
-import * as types from 'babel-types';
+import * as types from '@babel/types';
+import template from '@babel/template';
 import { resolve } from 'path';
-import * as template from 'babel-template';
 
 import { Asset } from '../Asset';
 

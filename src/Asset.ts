@@ -54,11 +54,13 @@ export class Asset {
 
   async parse(code: string): Promise<any> {}
   async collectDependencies(): Promise<any> {}
+  async transform(): Promise<any> {}
   generate(): any {}
 
   async process() {
     if (!this.generated) {
       await this.getDependencies();
+      await this.transform();
       this.generated = this.generate();
     }
   }
