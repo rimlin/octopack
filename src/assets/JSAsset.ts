@@ -4,6 +4,7 @@ import * as walk from 'babylon-walk';
 import * as babylon from 'babylon';
 import babel from '../transforms/babel';
 
+import { FileType } from '../enums';
 import { Asset, AssetOptions } from '../Asset';
 import collectDependencies from '../visitors/dependencies';
 
@@ -16,7 +17,7 @@ export default class JSAsset extends Asset {
   constructor(filename, options: AssetOptions) {
     super(filename, options);
 
-    this.type = 'js';
+    this.type = FileType.JS;
   }
 
   mightHaveDependencies() {

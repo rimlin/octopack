@@ -4,6 +4,7 @@ import { readFileAsync, writeFileAsync } from './utils';
 import { Bundle } from './Bundle';
 import { Resolver } from './Resolver';
 import { Parser } from './Parser';
+import { PackagerRegistry } from './packagers';
 import { Asset } from './Asset';
 import { WorkerFarm } from './WorkerFarm';
 
@@ -15,6 +16,7 @@ export class Bundler {
   mainFilename: string;
   options: BundleOptions;
   parser: Parser;
+  packagerRegistry: PackagerRegistry;
   resolver: Resolver;
   workerFarm: WorkerFarm;
   mainAsset: Asset;
@@ -26,6 +28,7 @@ export class Bundler {
     this.options = options;
 
     this.parser = new Parser({});
+    this.packagerRegistry = new PackagerRegistry();
     this.resolver = new Resolver({
       extensions: Object.keys(this.parser.getExtensions())
     });
@@ -38,7 +41,9 @@ export class Bundler {
     const mainAsset = await this.resolveAsset(this.mainFilename);
 
     await this.bundleAssets(mainAsset);
+    const bundle = this.createBundleTree(mainAsset);
 
+    bundle.package(this);
     this.endFarm();
 
     return mainAsset;
@@ -46,6 +51,22 @@ export class Bundler {
 
   async bundleAssets(mainAsset: Asset) {
     return await this.loadAsset(mainAsset);
+  }
+
+  createBundleTree(asset: Asset, bundle?: Bundle) {
+    if (!bundle) {
+      bundle = new Bundle(asset.type, asset.generateBundleName());
+      bundle.entryAsset = asset;
+    }
+
+    bundle.getSiblingBundle(asset.type).addAsset(asset);
+    asset.parentBundle = bundle;
+
+    for (let assetDep of asset.depAssets.values()) {
+      this.createBundleTree(assetDep, bundle);
+    }
+
+    return bundle;
   }
 
   async resolveAsset(filename: string, parent?: string): Promise<Asset> {

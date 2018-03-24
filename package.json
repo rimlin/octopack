@@ -33,6 +33,7 @@
     "babylon": "^6.18.0",
     "babylon-walk": "^1.0.2",
     "browser-resolve": "^1.11.2",
+    "cuid": "^2.1.0",
     "node-libs-browser": "^2.1.0",
     "worker-farm": "^1.5.2"
   }

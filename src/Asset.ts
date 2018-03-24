@@ -1,12 +1,18 @@
 import { extname } from 'path';
+import * as cuid from 'cuid';
 
-import { readFileAsync } from './utils';
+import { readFileAsync, convertExtensionToFileType } from './utils';
+import { FileType } from './enums';
+import { Bundle } from './Bundle';
 
 export interface AssetOptions {
 
 }
 
+let ASSET_ID = 1;
+
 export class Asset {
+  id = ASSET_ID++;
   processed: boolean;
   dependencies = new Set<string>();
   depAssets = new Map<string, Asset>();
@@ -15,17 +21,23 @@ export class Asset {
   ast: any;
   content: any;
   encoding = 'utf8';
-  type: 'js' | 'json';
-  isES6Module: boolean = false;
-  isAstDirty: boolean = false;
+  type: FileType;
+  isES6Module = false;
+  isAstDirty = false;
+  parentBundle: Bundle;
+  bundles = new Set<Bundle>();
 
   constructor(filename: string, options: AssertionOptions) {
     this.filename = filename;
-    this.type = extname(filename).slice(1) as 'js' | 'json';
+    this.type = convertExtensionToFileType(extname(filename).slice(1));
   }
 
   addDependency(filenameDep) {
     this.dependencies.add(filenameDep);
+  }
+
+  addDependencyUrl(filename) {
+
   }
 
   async loadIfNeeded() {
@@ -63,5 +75,10 @@ export class Asset {
       await this.transform();
       this.generated = this.generate();
     }
+  }
+
+  generateBundleName(): string {
+    const extension = extname(this.filename);
+    return this.filename.slice(0, -extension.length) + '-' + cuid().slice(0,6) + extension;
   }
 }
