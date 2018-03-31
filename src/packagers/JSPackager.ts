@@ -35,14 +35,7 @@ export class JSPackager extends Packager {
   }
 
   async end() {
-    let entry = [];
-
-    // Load the entry module
-    if (this.bundle.entryAsset) {
-      entry.push(this.bundle.entryAsset.id);
-    }
-
-    await this.dest.end('},{},' + JSON.stringify(entry) + ')');
+    await this.dest.end('},' + this.bundle.entryAsset.id + ')');
   }
 
   private async writeModule(id: number, code: string, deps = {}) {
