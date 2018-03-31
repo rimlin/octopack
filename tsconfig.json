@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "es6",
     "module": "commonjs",
-    "sourceMap": true,
+    "sourceMap": false,
     "moduleResolution": "node",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
@@ -15,6 +15,7 @@
   "exclude": [
     "node_modules",
     "**/*.spec.ts",
+    "src/builtins/prelude.js",
     "dist"
   ]
 }

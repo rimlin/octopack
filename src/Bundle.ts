@@ -75,7 +75,7 @@ export class Bundle {
   }
 
   async addDeps(asset: Asset, packager: Packager, included: Set<Asset>) {
-    if (this.assets.has(asset) || included.has(asset)) {
+    if (included.has(asset)) {
       return;
     }
 

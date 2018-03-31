@@ -32,8 +32,8 @@ export class Asset {
     this.type = convertExtensionToFileType(extname(filename).slice(1));
   }
 
-  addDependency(filenameDep) {
-    this.dependencies.add(filenameDep);
+  addDependency(depName) {
+    this.dependencies.add(depName);
   }
 
   addDependencyUrl(filename) {
@@ -79,6 +79,6 @@ export class Asset {
 
   generateBundleName(): string {
     const extension = extname(this.filename);
-    return this.filename.slice(0, -extension.length) + '-' + cuid().slice(0,6) + extension;
+    return this.filename.slice(0, -extension.length) + '-' + cuid().slice(5,10) + extension;
   }
 }

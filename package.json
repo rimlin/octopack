@@ -6,7 +6,7 @@
   "typings": "dist/index.d.ts",
   "scripts": {
     "test": "node ./dist/test/main.js",
-    "build": "rimraf ./dist && tsc",
+    "build": "rimraf ./dist && tsc && mkdir dist/src/builtins && cp -r src/builtins/* dist/src/builtins",
     "start": "npm run build && npm run test"
   },
   "repository": {

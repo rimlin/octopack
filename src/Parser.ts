@@ -7,7 +7,6 @@ export class Parser {
 
   constructor(options = {}) {
     this.registerExtensions(['js', 'jsx', 'es6'], './assets/JSAsset');
-    this.registerExtensions(['json'], './assets/JSONAsset');
   }
 
   getExtensions() {

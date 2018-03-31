@@ -4,8 +4,8 @@ import { Asset } from '../src/Asset';
 process.on('unhandledRejection', console.error)
 
 async function run() {
-  // let bundler = new Bundler('/mnt/d/Dev/diplom/test/test.js', {});
-  let bundler = new Bundler('D:\\Dev\\diplom\\test\\test.js', {});
+  let bundler = new Bundler('/mnt/d/Dev/diplom/test/test.js', {});
+  //let bundler = new Bundler('D:\\Dev\\diplom\\test\\test.js', {});
   let bundle = await bundler.bundle();
 
   printDeps(bundle);

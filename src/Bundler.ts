@@ -6,7 +6,6 @@ import { Resolver } from './Resolver';
 import { Parser } from './Parser';
 import { PackagerRegistry } from './packagers';
 import { Asset } from './Asset';
-import { WorkerFarm } from './WorkerFarm';
 
 export interface BundleOptions {
 
@@ -32,20 +31,15 @@ export class Bundler {
     this.resolver = new Resolver({
       extensions: Object.keys(this.parser.getExtensions())
     });
-    this.workerFarm = new WorkerFarm({});
   }
 
   async bundle() {
-    this.startFarm();
-
     const mainAsset = await this.resolveAsset(this.mainFilename);
 
     await this.bundleAssets(mainAsset);
     const bundle = this.createBundleTree(mainAsset);
 
     bundle.package(this);
-    this.endFarm();
-
     return mainAsset;
   }
 
@@ -89,25 +83,27 @@ export class Bundler {
 
     asset.processed = true;
 
-    const processed = await this.workerFarm.process(asset.filename);
+    const processed = await this.processFile(asset.filename);
     const dependencies = processed.dependencies;
     asset.generated = processed.generated;
 
-    return await Promise.all(dependencies.map(async dependencyFilename => {
-      const assetDep = await this.resolveAsset(dependencyFilename, asset.filename);
+    return await Promise.all(dependencies.map(async depName => {
+      const assetDep = await this.resolveAsset(depName, asset.filename);
 
-      asset.depAssets.set(assetDep.filename, assetDep);
-      asset.dependencies.add(dependencyFilename);
+      asset.depAssets.set(depName, assetDep);
+      asset.dependencies.add(depName);
 
       await this.loadAsset(assetDep);
     }));
   }
 
-  startFarm() {
-    this.workerFarm = new WorkerFarm({});
-  }
+  async processFile(filename: string) {
+    const asset = this.parser.getAsset(filename);
+    await asset.process();
 
-  endFarm() {
-    this.workerFarm.end();
+    return {
+      dependencies: Array.from(asset.dependencies.values()),
+      generated: asset.generated
+    };
   }
 }

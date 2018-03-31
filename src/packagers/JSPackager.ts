@@ -26,8 +26,9 @@ export class JSPackager extends Packager {
     this.dedupe.set(asset.id, asset.generated);
 
     let deps = {};
-    for (let dep of asset.depAssets.values()) {
-      deps[dep.filename] = dep.id;
+    for (let depName of asset.dependencies.values()) {
+      const depAsset = asset.depAssets.get(depName);
+      deps[depName] = depAsset.id;
     }
 
     await this.writeModule(asset.id, asset.generated, deps);
