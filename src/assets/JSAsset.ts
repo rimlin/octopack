@@ -67,6 +67,6 @@ export default class JSAsset extends Asset {
   generate() {
     let code = this.isAstDirty ? generate(this.ast).code : this.content;
 
-    return code;
+    return { js: code };
   }
 }

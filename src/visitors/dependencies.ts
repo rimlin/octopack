@@ -43,7 +43,7 @@ const visitor = {
 
     if (isDynamicImport) {
       asset.addDependency('_bundle_loader');
-      addDependency(asset, args[0]);
+      addDependency(asset, args[0], {dynamic: true});
 
       node.callee = requireTemplate().expression;
       node.arguments[0] = argTemplate({MODULE: args[0]}).expression;
@@ -52,8 +52,8 @@ const visitor = {
   }
 };
 
-function addDependency(asset: Asset, node) {
-  asset.addDependency(node.value);
+function addDependency(asset: Asset, node, opts = {}) {
+  asset.addDependency(node.value, opts);
 }
 
 export default visitor;

@@ -23,15 +23,15 @@ export class JSPackager extends Packager {
       return;
     }
 
-    this.dedupe.set(asset.id, asset.generated);
+    this.dedupe.set(asset.id, asset.generated.js);
 
     let deps = {};
-    for (let depName of asset.dependencies.values()) {
-      const depAsset = asset.depAssets.get(depName);
-      deps[depName] = depAsset.id;
+    for (let dep of asset.dependencies.values()) {
+      const depAsset = asset.depAssets.get(dep.name);
+      deps[dep.name] = depAsset.id;
     }
 
-    await this.writeModule(asset.id, asset.generated, deps);
+    await this.writeModule(asset.id, asset.generated.js, deps);
   }
 
   async end() {

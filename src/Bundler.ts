@@ -5,7 +5,7 @@ import { Bundle } from './Bundle';
 import { Resolver } from './Resolver';
 import { Parser } from './Parser';
 import { PackagerRegistry } from './packagers';
-import { Asset } from './Asset';
+import { Asset, Dependency } from './Asset';
 
 export interface BundleOptions {
 
@@ -47,17 +47,23 @@ export class Bundler {
     return await this.loadAsset(mainAsset);
   }
 
-  createBundleTree(asset: Asset, bundle?: Bundle) {
+  createBundleTree(asset: Asset, dep?: Dependency, bundle?: Bundle) {
     if (!bundle) {
       bundle = new Bundle(asset.type, asset.generateBundleName());
+      bundle.entryAsset = asset;
+    }
+
+    if (dep && dep.dynamic) {
+      bundle = bundle.createChildBundle(asset.type, asset.generateBundleName());
       bundle.entryAsset = asset;
     }
 
     bundle.getSiblingBundle(asset.type).addAsset(asset);
     asset.parentBundle = bundle;
 
-    for (let assetDep of asset.depAssets.values()) {
-      this.createBundleTree(assetDep, bundle);
+    for (let dep of asset.dependencies.values()) {
+      const assetDep = asset.depAssets.get(dep.name);
+      this.createBundleTree(assetDep, dep, bundle);
     }
 
     return bundle;
@@ -87,11 +93,11 @@ export class Bundler {
     const dependencies = processed.dependencies;
     asset.generated = processed.generated;
 
-    return await Promise.all(dependencies.map(async depName => {
-      const assetDep = await this.resolveAsset(depName, asset.filename);
+    return await Promise.all(dependencies.map(async dep => {
+      const assetDep = await this.resolveAsset(dep.name, asset.filename);
 
-      asset.depAssets.set(depName, assetDep);
-      asset.dependencies.add(depName);
+      asset.depAssets.set(dep.name, assetDep);
+      asset.dependencies.set(dep.name, dep);
 
       await this.loadAsset(assetDep);
     }));

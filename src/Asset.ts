@@ -1,12 +1,19 @@
-import { extname } from 'path';
+import * as path from 'path';
 import * as cuid from 'cuid';
 
 import { readFileAsync, convertExtensionToFileType } from './utils';
 import { FileType } from './enums';
 import { Bundle } from './Bundle';
+import { Parser } from './Parser';
 
 export interface AssetOptions {
+  publicURL: '',
+  parser?: Parser
+}
 
+export interface Dependency {
+  name: string;
+  dynamic: boolean;
 }
 
 let ASSET_ID = 1;
@@ -14,10 +21,13 @@ let ASSET_ID = 1;
 export class Asset {
   id = ASSET_ID++;
   processed: boolean;
-  dependencies = new Set<string>();
+  dependencies = new Map<string, Dependency>();
   depAssets = new Map<string, Asset>();
   filename: string;
-  generated: string;
+  generated: {
+    js?: string;
+    html?: string;
+  };
   ast: any;
   content: any;
   encoding = 'utf8';
@@ -26,18 +36,28 @@ export class Asset {
   isAstDirty = false;
   parentBundle: Bundle;
   bundles = new Set<Bundle>();
+  options: AssetOptions = {
+    publicURL: ''
+  };
 
-  constructor(filename: string, options: AssertionOptions) {
+  constructor(filename: string, options: AssetOptions) {
     this.filename = filename;
-    this.type = convertExtensionToFileType(extname(filename).slice(1));
+    this.options = options;
+    this.type = convertExtensionToFileType(path.extname(filename).slice(1));
   }
 
-  addDependency(depName) {
-    this.dependencies.add(depName);
+  addDependency(name, opts) {
+    this.dependencies.set(name, Object.assign({name}, opts));
   }
 
-  addDependencyUrl(filename) {
+  addURLDependency(url) {
+    if (!url) {
+      return url;
+    }
 
+    let resolved = path.resolve(path.dirname(this.filename), url).replace(/[\?#].*$/, '');
+    this.addDependency('./' + path.relative(path.dirname(this.filename), resolved), {dynamic: true});
+    return this.options.parser.getAsset(resolved).generateBundleName();
   }
 
   async loadIfNeeded() {
@@ -78,7 +98,7 @@ export class Asset {
   }
 
   generateBundleName(): string {
-    const extension = extname(this.filename);
+    const extension = path.extname(this.filename);
     return this.filename.slice(0, -extension.length) + '-' + cuid().slice(5,10) + extension;
   }
 }

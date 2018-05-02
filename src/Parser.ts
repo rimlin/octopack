@@ -1,12 +1,13 @@
 import { extname } from 'path';
 
-import { Asset } from './Asset';
+import { Asset, AssetOptions } from './Asset';
 
 export class Parser {
   extensions = {};
 
   constructor(options = {}) {
     this.registerExtensions(['js', 'jsx', 'es6'], './assets/JSAsset');
+    this.registerExtensions(['html'], './assets/HTMLAsset');
   }
 
   getExtensions() {
@@ -15,7 +16,10 @@ export class Parser {
 
   getAsset(filename): Asset {
     const TargetAsset = this.findAsset(filename);
-    return new TargetAsset(filename);
+    return new TargetAsset(filename, {
+      publicURL: '',
+      parser: this,
+    });
   }
 
   private registerExtensions(extnames, assetParser): void {
@@ -28,7 +32,7 @@ export class Parser {
     });
   }
 
-  private findAsset(filename): new(filename: string) => Asset {
+  private findAsset(filename): new(filename: string, options: AssetOptions) => Asset {
     const extension = extname(filename);
     let asset = this.extensions[extension];
 
